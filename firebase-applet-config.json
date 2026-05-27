@@ -1,10 +1,10 @@
 {
-  "projectId": "inspiring-physics-007pf",
-  "appId": "1:431232400579:web:e0e1de882fd931139cf676",
-  "apiKey": "AIzaSyAZfXSSVXt8DALXQJZhC9iAvUJK23Zl6ho",
-  "authDomain": "inspiring-physics-007pf.firebaseapp.com",
+  "projectId": "emprego-moz",
+  "appId": "1:401559698693:web:39c907fc3d23fdcf778b6c",
+  "apiKey": "AIzaSyC69N7yPknglErKbRVDoRNzauMj1olyqpo",
+  "authDomain": "emprego-moz.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-3836da77-68c2-4fb9-8604-b725ed94c237",
-  "storageBucket": "inspiring-physics-007pf.firebasestorage.app",
-  "messagingSenderId": "431232400579",
+  "storageBucket": "emprego-moz.firebasestorage.app",
+  "messagingSenderId": "401559698693",
   "measurementId": ""
 }
