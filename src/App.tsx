@@ -15,6 +15,10 @@ export default function App() {
   const [userCV, setUserCV] = useState("Profissional de tecnologias com experiência em React, Python e coordenação de projectos. Licenciatura concluída. Fluente em Português e Inglês, residente em Maputo.");
   const [autoApply, setAutoApply] = useState(false);
   const [appliedHistory, setAppliedHistory] = useState<AppliedJob[]>([]);
+  const [userDocs, setUserDocs] = useState<{id: string, name: string, type: string}[]>([
+     {id: "1", name: "MEU_CV_ACTUALIZADO.pdf", type: "Documento Principal (CV)"},
+     {id: "2", name: "BI_FRENTE_VERSO.pdf", type: "Documento de Identificação"}
+  ]);
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -43,6 +47,7 @@ export default function App() {
           const data = snapshot.data();
           if (data.cvData) setUserCV(data.cvData);
           if (typeof data.autoApply === 'boolean') setAutoApply(data.autoApply);
+          if (data.documents) setUserDocs(data.documents);
        }
     }, (error) => {
        console.error("Profile Fetch Error: ", error);
@@ -271,7 +276,7 @@ export default function App() {
             />
           )}
           {activeTab === "history" && <HistoryView key="history" history={appliedHistory} />}
-          {activeTab === "cv" && <ProfileView key="cv" cvData={userCV} setCvData={setUserCV} user={user} autoApply={autoApply} setAutoApply={setAutoApply} />}
+          {activeTab === "cv" && <ProfileView key="cv" cvData={userCV} setCvData={setUserCV} user={user} autoApply={autoApply} setAutoApply={setAutoApply} docs={userDocs} setDocs={setUserDocs} />}
         </AnimatePresence>
       </main>
     </div>
@@ -374,7 +379,7 @@ function StatCard({ title, value, trend, icon }: { title: string; value: string;
   );
 }
 
-function ProfileView({ cvData, setCvData, user, autoApply, setAutoApply }: { cvData?: string, setCvData?: (val: string) => void, user: User, autoApply: boolean, setAutoApply: (val: boolean) => void, key?: string }) {
+function ProfileView({ cvData, setCvData, user, autoApply, setAutoApply, docs, setDocs }: { cvData?: string, setCvData?: (val: string) => void, user: User, autoApply: boolean, setAutoApply: (val: boolean) => void, docs: {id: string, name: string, type: string}[], setDocs: (val: any) => void, key?: string }) {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -411,6 +416,7 @@ function ProfileView({ cvData, setCvData, user, autoApply, setAutoApply }: { cvD
        await setDoc(doc(db, "users", user.uid), {
          cvData: cvData,
          autoApply: autoApply,
+         documents: docs,
          userId: user.uid
        }, { merge: true });
        setSaved(true);
@@ -505,26 +511,28 @@ function ProfileView({ cvData, setCvData, user, autoApply, setAutoApply }: { cvD
              
              {/* Mock uploaded files */}
              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                   <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-red-500" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-700">MEU_CV_ACTUALIZADO.pdf</p>
-                        <p className="text-xs text-slate-500">Documento Principal (CV)</p>
-                      </div>
-                   </div>
-                   <button type="button" className="text-slate-400 hover:text-red-500 transition"><Trash2 className="w-4 h-4" /></button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                   <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-blue-500" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-700">BI_FRENTE_VERSO.pdf</p>
-                        <p className="text-xs text-slate-500">Documento de Identificação</p>
-                      </div>
-                   </div>
-                   <button type="button" className="text-slate-400 hover:text-red-500 transition"><Trash2 className="w-4 h-4" /></button>
-                </div>
+                {docs.map((docItem) => (
+                  <div key={docItem.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                     <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">{docItem.name}</p>
+                          <p className="text-xs text-slate-500">{docItem.type}</p>
+                        </div>
+                     </div>
+                     <button 
+                       type="button" 
+                       onClick={async () => {
+                          const newDocs = docs.filter(d => d.id !== docItem.id);
+                          setDocs(newDocs);
+                          await setDoc(doc(db, "users", user.uid), { documents: newDocs }, { merge: true });
+                       }}
+                       className="text-slate-400 hover:text-red-500 transition"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                  </div>
+                ))}
              </div>
           </div>
 

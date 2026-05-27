@@ -110,7 +110,33 @@ async function startServer() {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        return res.status(500).json({ error: "Chave API não configurada." });
+        // Fallback for scanning when no API key
+        return res.json([
+          {
+            id: `mock_scan_${Date.now()}`,
+            title: "Desenvolvedor Backend Pleno",
+            company: "Tech Moçambique",
+            location: "Nampula",
+            source: "LinkedIn",
+            datePosted: "Agora mesmo",
+            description: "Esta é uma vaga simulada porque a chave API Gemini não está configurada neste ambiente. Procuramos um programador experiente.",
+            matchScore: 95,
+            category: "TI & Software",
+            contactEmail: "recrutamento@tech.co.mz"
+          },
+          {
+            id: `mock_scan_2_${Date.now()}`,
+            title: "Auditor Financeiro",
+            company: "KPMG MZ",
+            location: "Maputo",
+            source: "Emprego.co.mz",
+            datePosted: "Há 1h",
+            description: "Esta é outra vaga simulada gerada como demonstração de dados.",
+            matchScore: 88,
+            category: "Finanças",
+            contactEmail: "rh@kpmg.co.mz"
+          }
+        ]);
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -138,8 +164,6 @@ async function startServer() {
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-pro',
         contents: prompt,
-        // @ts-ignore
-        tools: [{ googleSearch: {} }],
         config: {
             temperature: 0.2
         }
