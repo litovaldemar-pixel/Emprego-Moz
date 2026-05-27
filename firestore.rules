@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidAppliedJob(data) {
+      return data.keys().hasAll(['jobTitle', 'jobCompany', 'jobLocation', 'userId', 'dateApplied', 'status', 'createdAt']) &&
+             data.keys().size() >= 7 && data.keys().size() <= 8 &&
+             data.jobTitle is string && data.jobTitle.size() > 0 && data.jobTitle.size() <= 200 &&
+             data.jobCompany is string && data.jobCompany.size() > 0 && data.jobCompany.size() <= 200 &&
+             data.jobLocation is string && data.jobLocation.size() >= 0 && data.jobLocation.size() <= 200 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.dateApplied is string && data.dateApplied.size() > 0 && data.dateApplied.size() <= 100 &&
+             data.status in ['Enviado', 'Entrevista', 'Rejeitado'] &&
+             data.createdAt == request.time &&
+             (!('previewUrl' in data) || (data.previewUrl is string && data.previewUrl.size() <= 2000));
+    }
+    
+    function isValidAppliedJobUpdate(data) {
+       return data.jobTitle is string && data.jobTitle.size() > 0 && data.jobTitle.size() <= 200 &&
+             data.jobCompany is string && data.jobCompany.size() > 0 && data.jobCompany.size() <= 200 &&
+             data.jobLocation is string && data.jobLocation.size() >= 0 && data.jobLocation.size() <= 200 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.dateApplied is string && data.dateApplied.size() > 0 && data.dateApplied.size() <= 100 &&
+             data.status in ['Enviado', 'Entrevista', 'Rejeitado'] &&
+             (!('previewUrl' in data) || (data.previewUrl is string && data.previewUrl.size() <= 2000));
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && userId == request.auth.uid;
+      allow write: if isSignedIn() && userId == request.auth.uid && incoming().userId == request.auth.uid && incoming().cvData is string && incoming().cvData.size() <= 50000;
+    }
+
+    match /users/{userId}/appliedJobs/{appliedJobId} {
+      allow read: if isSignedIn() && userId == request.auth.uid && isValidId(appliedJobId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && userId == request.auth.uid; 
+      
+      allow create: if isSignedIn() && 
+                    userId == request.auth.uid && 
+                    isValidId(appliedJobId) && 
+                    isValidAppliedJob(incoming());
+                    
+      allow update: if isSignedIn() && 
+                    userId == request.auth.uid &&
+                    isValidId(appliedJobId) &&
+                    existing().userId == request.auth.uid &&
+                    isValidAppliedJobUpdate(incoming()) &&
+                    incoming().userId == existing().userId && 
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+                    
+      allow delete: if isSignedIn() && userId == request.auth.uid && isValidId(appliedJobId) && existing().userId == request.auth.uid;
+    }
+  }
+}

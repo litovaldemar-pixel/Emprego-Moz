@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "AppliedJob": {
+      "title": "AppliedJob",
+      "description": "A job application submitted by a user",
+      "type": "object",
+      "properties": {
+        "jobTitle": {
+          "type": "string",
+          "description": "Job title"
+        },
+        "jobCompany": {
+          "type": "string",
+          "description": "Job company"
+        },
+        "jobLocation": {
+          "type": "string",
+          "description": "Job location"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who applied"
+        },
+        "dateApplied": {
+          "type": "string",
+          "description": "Date applied"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Enviado", "Entrevista", "Rejeitado"],
+          "description": "Application status"
+        },
+        "previewUrl": {
+          "type": "string",
+          "description": "Preview URL for fake email"
+        },
+        "createdAt": {
+          "type": "object",
+          "description": "Timestamp"
+        }
+      },
+      "required": ["jobTitle", "jobCompany", "jobLocation", "userId", "dateApplied", "status", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing CV",
+      "type": "object",
+      "properties": {
+        "cvData": {
+          "type": "string",
+          "description": "The CV text content"
+        },
+        "userId": {
+           "type": "string"
+        }
+      },
+      "required": ["cvData", "userId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "User profile document"
+    },
+    "users/{userId}/appliedJobs/{appliedJobId}": {
+      "schema": {
+        "$ref": "#/entities/AppliedJob"
+      },
+      "description": "Applied jobs for a specific user"
+    }
+  }
+}

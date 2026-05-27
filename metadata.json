@@ -1,0 +1,6 @@
+{
+  "name": "EmpregaMoz AI",
+  "description": "Agregador de vagas e assistente de auto-candidatura para Moçambique, utilizando IA para matching de currículos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
